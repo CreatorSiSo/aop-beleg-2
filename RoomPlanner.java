@@ -1,23 +1,29 @@
 import java.util.Random;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class RoomPlanner {
     public static void main(String[] args) {
         Random rng = new Random();
+        System.out.println("Grundriss:\n\n"
+                + "  |---|---|---|\n"
+                + "  | 0 | 1 | 2 |\n"
+                + "  |---|---|---|\n"
+                + "  | 3 | 4 | 5 |\n"
+                + "  |---|---|---|\n"
+                + "  | 6 | 7 | 8 |\n"
+                + "  |---|---|---|\n");
 
-        Raum[] rooms = new Raum[9];
-        for (int i = 0; i < rooms.length; i += 1) {
-            rooms[i] = GewerbeRaum.random(rng);
-        }
-        rooms[4] = new Treppenhaus();
+        IntStream.range(0, 9)
+                .forEach(i -> {
+                    Raum room = i == 4 ? new Treppenhaus() : GewerbeRaum.random(rng);
 
-        for (Raum room : rooms) {
-            System.out.println(room.getClass().getName());
-            room.getInventory()
-                    .map(string -> "  " + string)
-                    .forEach(System.out::println);
-            System.out.println("");
-        }
+                    System.out.println(i + ": " + room.getClass().getName());
+                    room.getInventory()
+                            .map(string -> "  " + string)
+                            .forEach(System.out::println);
+                    System.out.println("");
+                });
     }
 }
 
