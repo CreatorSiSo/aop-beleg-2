@@ -46,7 +46,7 @@ abstract class GewerbeRaum<I> implements Raum {
         return Stream.of(this.inventory).map(Object::toString);
     }
 
-    static Raum random(Random rng) {
+    public static Raum random(Random rng) {
         int i = rng.nextInt(0, 6);
         return switch (i) {
             default -> throw new IllegalStateException("Out of Range 0..6: " + i);
@@ -72,25 +72,25 @@ abstract class GewerbeRaum<I> implements Raum {
 }
 
 class Büro extends GewerbeRaum<GeschäftsRaumItem> {
-    static GewerbeRaum<GeschäftsRaumItem> random(Random rng) {
+    public static GewerbeRaum<GeschäftsRaumItem> random(Random rng) {
         return createRandom(rng, new Büro(), GeschäftsRaumItem.values());
     }
 }
 
 class AufenthaltsRaum extends GewerbeRaum<GeschäftsRaumItem> {
-    static GewerbeRaum<GeschäftsRaumItem> random(Random rng) {
+    public static GewerbeRaum<GeschäftsRaumItem> random(Random rng) {
         return createRandom(rng, new AufenthaltsRaum(), GeschäftsRaumItem.values());
     }
 }
 
 class Sanitäreinrichtung extends GewerbeRaum<WirtschaftsRaumItem> {
-    static GewerbeRaum<WirtschaftsRaumItem> random(Random rng) {
+    public static GewerbeRaum<WirtschaftsRaumItem> random(Random rng) {
         return createRandom(rng, new Sanitäreinrichtung(), WirtschaftsRaumItem.values());
     }
 }
 
 class Teeküche extends GewerbeRaum<WirtschaftsRaumItem> {
-    static GewerbeRaum<WirtschaftsRaumItem> random(Random rng) {
+    public static GewerbeRaum<WirtschaftsRaumItem> random(Random rng) {
         return createRandom(rng, new Teeküche(), WirtschaftsRaumItem.values());
     }
 }
@@ -101,7 +101,7 @@ enum MetallWerkstattItem {
 }
 
 class MetallWerkstatt extends GewerbeRaum<MetallWerkstattItem> {
-    static GewerbeRaum<MetallWerkstattItem> random(Random rng) {
+    public static GewerbeRaum<MetallWerkstattItem> random(Random rng) {
         return createRandom(rng, new MetallWerkstatt(), MetallWerkstattItem.values());
     }
 }
@@ -112,7 +112,7 @@ enum HolzWerkstattItem {
 }
 
 class HolzWerkstatt extends GewerbeRaum<HolzWerkstattItem> {
-    static GewerbeRaum<HolzWerkstattItem> random(Random rng) {
+    public static GewerbeRaum<HolzWerkstattItem> random(Random rng) {
         return createRandom(rng, new HolzWerkstatt(), HolzWerkstattItem.values());
     }
 }
