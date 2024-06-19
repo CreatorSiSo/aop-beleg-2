@@ -1,4 +1,6 @@
 import java.util.Random;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -14,16 +16,22 @@ public class RoomPlanner {
                 + "  | 6 | 7 | 8 |\n"
                 + "  |---|---|---|\n");
 
-        IntStream.range(0, 9)
-                .forEach(i -> {
-                    Raum room = i == 4 ? new Treppenhaus() : GewerbeRaum.random(rng);
+        Raum[] rooms = IntStream.range(0, 9)
+                .mapToObj(i -> i == 4 ? new Treppenhaus() : GewerbeRaum.random(rng))
+                .toArray(Raum[]::new);
 
-                    System.out.println(i + ": " + room.getClass().getName());
-                    room.getInventory()
-                            .map(string -> "  " + string)
-                            .forEach(System.out::println);
-                    System.out.println("");
-                });
+        Scanner input = new Scanner(System.in);
+        String currentLine = "";
+        while (true) {
+            System.out.println("Id of room to enter: ");
+            currentLine = input.nextLine();
+            int i = Integer.parseInt(currentLine.trim());
+            if (i < 0 || i >= rooms.length) {
+                System.out.println("\nRoom " + i + " does not exist.\n");
+                continue;
+            }
+            System.out.println("\n" + rooms[i]);
+        }
     }
 }
 
@@ -34,6 +42,11 @@ interface Raum {
 class Treppenhaus implements Raum {
     public Stream<String> getInventory() {
         return Stream.empty();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName() + "\n";
     }
 }
 
@@ -63,6 +76,16 @@ abstract class GewerbeRaum<I> implements Raum {
             case 4 -> MetallWerkstatt.random(rng);
             case 5 -> HolzWerkstatt.random(rng);
         };
+    }
+
+    @Override
+    public String toString() {
+        String result = getClass().getName() + "\n";
+        result += getInventory()
+                .map(string -> "  " + string)
+                .collect(Collectors.joining("\n"));
+        result += "\n";
+        return result;
     }
 
     protected static <I> GewerbeRaum<I> createRandom(Random rng, GewerbeRaum<I> room, I[] values) {
