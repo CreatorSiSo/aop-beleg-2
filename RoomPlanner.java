@@ -5,13 +5,13 @@ public class RoomPlanner {
     public static void main(String[] args) {
         Random rng = new Random();
 
-        GewerbeRaum[] rooms = new GewerbeRaum[9];
+        Raum[] rooms = new Raum[9];
         for (int i = 0; i < rooms.length; i += 1) {
             rooms[i] = GewerbeRaum.random(rng);
         }
         rooms[4] = new Treppenhaus();
 
-        for (GewerbeRaum room : rooms) {
+        for (Raum room : rooms) {
             System.out.println(room.getClass().getName());
             room.getInventory()
                     .map(string -> "  " + string)
@@ -21,17 +21,13 @@ public class RoomPlanner {
     }
 }
 
-interface GewerbeRaum {
+interface Raum {
     Stream<String> getInventory();
+}
 
-    static GewerbeRaum random(Random rng) {
-        int i = rng.nextInt(0, 3);
-        return switch (i) {
-            default -> throw new IllegalStateException("Out of Range 0..3: " + i);
-            case 0 -> GeschäftsRaum.random(rng);
-            case 1 -> WirtschaftsRaum.random(rng);
-            case 2 -> Werkstatt.random(rng);
-        };
+class Treppenhaus implements Raum {
+    public Stream<String> getInventory() {
+        return Stream.empty();
     }
 }
 
@@ -40,50 +36,30 @@ enum GeschäftsRaumItem {
     Table,
 }
 
-interface GeschäftsRaum extends GewerbeRaum {
-    static GewerbeRaum random(Random rng) {
-        int i = rng.nextInt(0, 2);
-        return switch (i) {
-            default -> throw new IllegalStateException("Out of Range 0..2: " + i);
-            case 0 -> Büro.random(rng);
-            case 1 -> AufenthaltsRaum.random(rng);
-        };
-    }
-}
-
 enum WirtschaftsRaumItem {
     Sink,
     TowelDispenser,
 }
 
-interface WirtschaftsRaum extends GewerbeRaum {
-    static GewerbeRaum random(Random rng) {
-        int i = rng.nextInt(0, 2);
-        return switch (i) {
-            default -> throw new IllegalStateException("Out of Range 0..2: " + i);
-            case 0 -> Sanitäreinrichtung.random(rng);
-            case 1 -> Teeküche.random(rng);
-        };
-    }
-}
-
-interface Werkstatt extends GewerbeRaum {
-    static GewerbeRaum random(Random rng) {
-        int i = rng.nextInt(0, 2);
-        return switch (i) {
-            default -> throw new IllegalStateException("Out of Range 0..2: " + i);
-            case 0 -> MetallWerkstatt.random(rng);
-            case 1 -> HolzWerkstatt.random(rng);
-        };
-    }
-}
-
-abstract class Raum<I> implements GewerbeRaum {
+abstract class GewerbeRaum<I> implements Raum {
     public Stream<String> getInventory() {
         return Stream.of(this.inventory).map(Object::toString);
     }
 
-    protected static <I> Raum<I> createRandom(Random rng, Raum<I> room, I[] values) {
+    static Raum random(Random rng) {
+        int i = rng.nextInt(0, 6);
+        return switch (i) {
+            default -> throw new IllegalStateException("Out of Range 0..6: " + i);
+            case 0 -> Büro.random(rng);
+            case 1 -> AufenthaltsRaum.random(rng);
+            case 2 -> Sanitäreinrichtung.random(rng);
+            case 3 -> Teeküche.random(rng);
+            case 4 -> MetallWerkstatt.random(rng);
+            case 5 -> HolzWerkstatt.random(rng);
+        };
+    }
+
+    protected static <I> GewerbeRaum<I> createRandom(Random rng, GewerbeRaum<I> room, I[] values) {
         room.inventory = rng
                 .ints(0, values.length)
                 .limit(rng.nextInt(10))
@@ -95,26 +71,26 @@ abstract class Raum<I> implements GewerbeRaum {
     protected InventoryItem<I>[] inventory;
 }
 
-class Büro extends Raum<GeschäftsRaumItem> implements GeschäftsRaum {
-    static Raum<GeschäftsRaumItem> random(Random rng) {
+class Büro extends GewerbeRaum<GeschäftsRaumItem> {
+    static GewerbeRaum<GeschäftsRaumItem> random(Random rng) {
         return createRandom(rng, new Büro(), GeschäftsRaumItem.values());
     }
 }
 
-class AufenthaltsRaum extends Raum<GeschäftsRaumItem> implements GeschäftsRaum {
-    static Raum<GeschäftsRaumItem> random(Random rng) {
+class AufenthaltsRaum extends GewerbeRaum<GeschäftsRaumItem> {
+    static GewerbeRaum<GeschäftsRaumItem> random(Random rng) {
         return createRandom(rng, new AufenthaltsRaum(), GeschäftsRaumItem.values());
     }
 }
 
-class Sanitäreinrichtung extends Raum<WirtschaftsRaumItem> implements WirtschaftsRaum {
-    static Raum<WirtschaftsRaumItem> random(Random rng) {
+class Sanitäreinrichtung extends GewerbeRaum<WirtschaftsRaumItem> {
+    static GewerbeRaum<WirtschaftsRaumItem> random(Random rng) {
         return createRandom(rng, new Sanitäreinrichtung(), WirtschaftsRaumItem.values());
     }
 }
 
-class Teeküche extends Raum<WirtschaftsRaumItem> implements WirtschaftsRaum {
-    static Raum<WirtschaftsRaumItem> random(Random rng) {
+class Teeküche extends GewerbeRaum<WirtschaftsRaumItem> {
+    static GewerbeRaum<WirtschaftsRaumItem> random(Random rng) {
         return createRandom(rng, new Teeküche(), WirtschaftsRaumItem.values());
     }
 }
@@ -124,8 +100,8 @@ enum MetallWerkstattItem {
     PolishingMachine,
 }
 
-class MetallWerkstatt extends Raum<MetallWerkstattItem> implements Werkstatt {
-    static Raum<MetallWerkstattItem> random(Random rng) {
+class MetallWerkstatt extends GewerbeRaum<MetallWerkstattItem> {
+    static GewerbeRaum<MetallWerkstattItem> random(Random rng) {
         return createRandom(rng, new MetallWerkstatt(), MetallWerkstattItem.values());
     }
 }
@@ -135,15 +111,9 @@ enum HolzWerkstattItem {
     Router,
 }
 
-class HolzWerkstatt extends Raum<HolzWerkstattItem> implements Werkstatt {
-    static Raum<HolzWerkstattItem> random(Random rng) {
+class HolzWerkstatt extends GewerbeRaum<HolzWerkstattItem> {
+    static GewerbeRaum<HolzWerkstattItem> random(Random rng) {
         return createRandom(rng, new HolzWerkstatt(), HolzWerkstattItem.values());
-    }
-}
-
-class Treppenhaus implements GewerbeRaum {
-    public Stream<String> getInventory() {
-        return Stream.empty();
     }
 }
 
