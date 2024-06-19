@@ -41,7 +41,7 @@ enum GeschäftsRaumItem {
 }
 
 interface GeschäftsRaum extends GewerbeRaum {
-    static GeschäftsRaum random(Random rng) {
+    static GewerbeRaum random(Random rng) {
         int i = rng.nextInt(0, 2);
         return switch (i) {
             default -> throw new IllegalStateException("Out of Range 0..2: " + i);
@@ -57,19 +57,18 @@ enum WirtschaftsRaumItem {
 }
 
 interface WirtschaftsRaum extends GewerbeRaum {
-
-    static WirtschaftsRaum random(Random rng) {
+    static GewerbeRaum random(Random rng) {
         int i = rng.nextInt(0, 2);
         return switch (i) {
             default -> throw new IllegalStateException("Out of Range 0..2: " + i);
-            case 0 -> Sanitäreinrichtungen.random(rng);
+            case 0 -> Sanitäreinrichtung.random(rng);
             case 1 -> Teeküche.random(rng);
         };
     }
 }
 
 interface Werkstatt extends GewerbeRaum {
-    static Werkstatt random(Random rng) {
+    static GewerbeRaum random(Random rng) {
         int i = rng.nextInt(0, 2);
         return switch (i) {
             default -> throw new IllegalStateException("Out of Range 0..2: " + i);
@@ -79,60 +78,45 @@ interface Werkstatt extends GewerbeRaum {
     }
 }
 
-class Büro implements GeschäftsRaum {
-    static Büro random(Random rng) {
-        Büro room = new Büro();
-        room.inventory = InventoryItem.randomArray(rng, GeschäftsRaumItem.values());
-        return room;
-    }
-
+abstract class Raum<I> implements GewerbeRaum {
     public Stream<String> getInventory() {
         return Stream.of(this.inventory).map(Object::toString);
     }
 
-    private InventoryItem<GeschäftsRaumItem>[] inventory;
+    protected static <I> Raum<I> createRandom(Random rng, Raum<I> room, I[] values) {
+        room.inventory = rng
+                .ints(0, values.length)
+                .limit(rng.nextInt(10))
+                .mapToObj(i -> new InventoryItem<I>(values[i]))
+                .toArray(i -> (InventoryItem<I>[]) new InventoryItem[i]);
+        return room;
+    }
+
+    protected InventoryItem<I>[] inventory;
 }
 
-class AufenthaltsRaum implements GeschäftsRaum {
-    static AufenthaltsRaum random(Random rng) {
-        AufenthaltsRaum room = new AufenthaltsRaum();
-        room.inventory = InventoryItem.randomArray(rng, GeschäftsRaumItem.values());
-        return room;
+class Büro extends Raum<GeschäftsRaumItem> implements GeschäftsRaum {
+    static Raum<GeschäftsRaumItem> random(Random rng) {
+        return createRandom(rng, new Büro(), GeschäftsRaumItem.values());
     }
-
-    public Stream<String> getInventory() {
-        return Stream.of(this.inventory).map(Object::toString);
-    }
-
-    private InventoryItem<GeschäftsRaumItem>[] inventory;
 }
 
-class Sanitäreinrichtungen implements WirtschaftsRaum {
-    static Sanitäreinrichtungen random(Random rng) {
-        Sanitäreinrichtungen room = new Sanitäreinrichtungen();
-        room.inventory = InventoryItem.randomArray(rng, WirtschaftsRaumItem.values());
-        return room;
+class AufenthaltsRaum extends Raum<GeschäftsRaumItem> implements GeschäftsRaum {
+    static Raum<GeschäftsRaumItem> random(Random rng) {
+        return createRandom(rng, new AufenthaltsRaum(), GeschäftsRaumItem.values());
     }
-
-    public Stream<String> getInventory() {
-        return Stream.of(this.inventory).map(Object::toString);
-    }
-
-    private InventoryItem<WirtschaftsRaumItem>[] inventory;
 }
 
-class Teeküche implements WirtschaftsRaum {
-    static Teeküche random(Random rng) {
-        Teeküche room = new Teeküche();
-        room.inventory = InventoryItem.randomArray(rng, WirtschaftsRaumItem.values());
-        return room;
+class Sanitäreinrichtung extends Raum<WirtschaftsRaumItem> implements WirtschaftsRaum {
+    static Raum<WirtschaftsRaumItem> random(Random rng) {
+        return createRandom(rng, new Sanitäreinrichtung(), WirtschaftsRaumItem.values());
     }
+}
 
-    public Stream<String> getInventory() {
-        return Stream.of(this.inventory).map(Object::toString);
+class Teeküche extends Raum<WirtschaftsRaumItem> implements WirtschaftsRaum {
+    static Raum<WirtschaftsRaumItem> random(Random rng) {
+        return createRandom(rng, new Teeküche(), WirtschaftsRaumItem.values());
     }
-
-    private InventoryItem<WirtschaftsRaumItem>[] inventory;
 }
 
 enum MetallWerkstattItem {
@@ -140,18 +124,10 @@ enum MetallWerkstattItem {
     PolishingMachine,
 }
 
-class MetallWerkstatt implements Werkstatt {
-    static MetallWerkstatt random(Random rng) {
-        MetallWerkstatt room = new MetallWerkstatt();
-        room.inventory = InventoryItem.randomArray(rng, MetallWerkstattItem.values());
-        return room;
+class MetallWerkstatt extends Raum<MetallWerkstattItem> implements Werkstatt {
+    static Raum<MetallWerkstattItem> random(Random rng) {
+        return createRandom(rng, new MetallWerkstatt(), MetallWerkstattItem.values());
     }
-
-    public Stream<String> getInventory() {
-        return Stream.of(this.inventory).map(Object::toString);
-    }
-
-    private InventoryItem<MetallWerkstattItem>[] inventory;
 }
 
 enum HolzWerkstattItem {
@@ -159,18 +135,10 @@ enum HolzWerkstattItem {
     Router,
 }
 
-class HolzWerkstatt implements Werkstatt {
-    static HolzWerkstatt random(Random rng) {
-        HolzWerkstatt room = new HolzWerkstatt();
-        room.inventory = InventoryItem.randomArray(rng, HolzWerkstattItem.values());
-        return room;
+class HolzWerkstatt extends Raum<HolzWerkstattItem> implements Werkstatt {
+    static Raum<HolzWerkstattItem> random(Random rng) {
+        return createRandom(rng, new HolzWerkstatt(), HolzWerkstattItem.values());
     }
-
-    public Stream<String> getInventory() {
-        return Stream.of(this.inventory).map(Object::toString);
-    }
-
-    private InventoryItem<HolzWerkstattItem>[] inventory;
 }
 
 class Treppenhaus implements GewerbeRaum {
@@ -187,14 +155,6 @@ class InventoryItem<Kind> {
         this.kind = kind;
         this.serialNumber = nextSerialNumber;
         nextSerialNumber += 1;
-    }
-
-    static <Kind> InventoryItem<Kind>[] randomArray(Random rng, Kind[] itemKinds) {
-        return rng
-                .ints(0, itemKinds.length)
-                .limit(rng.nextInt(10))
-                .mapToObj(i -> new InventoryItem<Kind>(itemKinds[i]))
-                .toArray(i -> (InventoryItem<Kind>[]) new InventoryItem[i]);
     }
 
     @Override
